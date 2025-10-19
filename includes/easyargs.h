@@ -12,49 +12,177 @@
 #include <stdio.h>
 #include <stdlib.h>  // used for parsing (atoi, atof)
 #include <string.h>  // used for strcmp
+#include <limits.h>  // used for types limits
+#include <errno.h>   // used for errno
+#include <stdint.h>  // used for SIZE_MAX 
 
 
 // REQUIRED_ARG(type, name, label, description, parser)
 // label and description should be strings, e.g. "contrast" and "Contrast applied to image"
-#define REQUIRED_STRING_ARG(name, label, description) REQUIRED_ARG(char*, name, label, description, )
-#define REQUIRED_CHAR_ARG(name, label, description) REQUIRED_ARG(char, name, label, description, parse_char)
-#define REQUIRED_INT_ARG(name, label, description) REQUIRED_ARG(int, name, label, description, atoi)
-#define REQUIRED_UINT_ARG(name, label, description) REQUIRED_ARG(unsigned int, name, label, description, atoi)
-#define REQUIRED_LONG_ARG(name, label, description) REQUIRED_ARG(long, name, label, description, atol)
-#define REQUIRED_ULONG_ARG(name, label, description) REQUIRED_ARG(unsigned long, name, label, description, parse_ul)
-#define REQUIRED_LONG_LONG_ARG(name, label, description) REQUIRED_ARG(long long, name, label, description, atoll)
-#define REQUIRED_ULONG_LONG_ARG(name, label, description) REQUIRED_ARG(unsigned long long, name, label, description, parse_ull)
-#define REQUIRED_SIZE_ARG(name, label, description) REQUIRED_ARG(size_t, name, label, description, parse_ull)
-#define REQUIRED_FLOAT_ARG(name, label, description) REQUIRED_ARG(float, name, label, description, atof)
-#define REQUIRED_DOUBLE_ARG(name, label, description) REQUIRED_ARG(double, name, label, description, atof)
+#define REQUIRED_STRING_ARG(name, label, description) REQUIRED_ARG(char*, name, label, description, easyargs_parse_str)
+#define REQUIRED_CHAR_ARG(name, label, description) REQUIRED_ARG(char, name, label, description, easyargs_parse_char)
+#define REQUIRED_INT_ARG(name, label, description) REQUIRED_ARG(int, name, label, description, easyargs_parse_int)
+#define REQUIRED_UINT_ARG(name, label, description) REQUIRED_ARG(unsigned int, name, label, description, easyargs_parse_uint)
+#define REQUIRED_LONG_ARG(name, label, description) REQUIRED_ARG(long, name, label, description, easyargs_parse_long)
+#define REQUIRED_ULONG_ARG(name, label, description) REQUIRED_ARG(unsigned long, name, label, description, easyargs_parse_ulong)
+#define REQUIRED_LONG_LONG_ARG(name, label, description) REQUIRED_ARG(long long, name, label, description, easyargs_parse_llong)
+#define REQUIRED_ULONG_LONG_ARG(name, label, description) REQUIRED_ARG(unsigned long long, name, label, description, easyargs_parse_ullong)
+#define REQUIRED_SIZE_ARG(name, label, description) REQUIRED_ARG(size_t, name, label, description, easyargs_parse_size_t)
+#define REQUIRED_FLOAT_ARG(name, label, description) REQUIRED_ARG(float, name, label, description, easyargs_parse_float)
+#define REQUIRED_DOUBLE_ARG(name, label, description) REQUIRED_ARG(double, name, label, description, easyargs_parse_double)
 
 // OPTIONAL_ARG(type, name, default, flag, label, description, formatter, parser)
-#define OPTIONAL_STRING_ARG(name, default, flag, label, description) OPTIONAL_ARG(char*, name, default, flag, label, description, "%s", )
-#define OPTIONAL_CHAR_ARG(name, default, flag, label, description) OPTIONAL_ARG(char, name, default, flag, label, description, "%c", parse_char)
-#define OPTIONAL_INT_ARG(name, default, flag, label, description) OPTIONAL_ARG(int, name, default, flag, label, description, "%d", atoi)
-#define OPTIONAL_UINT_ARG(name, default, flag, label, description) OPTIONAL_ARG(unsigned int, name, default, flag, label, description, "%u", atoi)
-#define OPTIONAL_LONG_ARG(name, default, flag, label, description) OPTIONAL_ARG(long, name, default, flag, label, description, "%ld", atol)
-#define OPTIONAL_ULONG_ARG(name, default, flag, label, description) OPTIONAL_ARG(unsigned long, name, default, flag, label, description, "%lu", parse_ul)
-#define OPTIONAL_LONG_LONG_ARG(name, default, flag, label, description) OPTIONAL_ARG(long long, name, default, flag, label, description, "%lld", atoll)
-#define OPTIONAL_ULONG_LONG_ARG(name, default, flag, label, description) OPTIONAL_ARG(unsigned long long, name, default, flag, label, description, "%llu", parse_ull)
-#define OPTIONAL_SIZE_ARG(name, default, flag, label, description) OPTIONAL_ARG(size_t, name, default, flag, label, description, "%zu", parse_ull)
-#define OPTIONAL_FLOAT_ARG(name, default, flag, label, description, precision) OPTIONAL_ARG(float, name, default, flag, label, description, "%." #precision "g", atof)
-#define OPTIONAL_DOUBLE_ARG(name, default, flag, label, description, precision) OPTIONAL_ARG(double, name, default, flag, label, description, "%." #precision "g", atof)
+#define OPTIONAL_STRING_ARG(name, default, flag, label, description) OPTIONAL_ARG(char*, name, default, flag, label, description, "%s", easyargs_parse_str)
+#define OPTIONAL_CHAR_ARG(name, default, flag, label, description) OPTIONAL_ARG(char, name, default, flag, label, description, "%c", easyargs_parse_char)
+#define OPTIONAL_INT_ARG(name, default, flag, label, description) OPTIONAL_ARG(int, name, default, flag, label, description, "%d", easyargs_parse_int)
+#define OPTIONAL_UINT_ARG(name, default, flag, label, description) OPTIONAL_ARG(unsigned int, name, default, flag, label, description, "%u", easyargs_parse_uint)
+#define OPTIONAL_LONG_ARG(name, default, flag, label, description) OPTIONAL_ARG(long, name, default, flag, label, description, "%ld", easyargs_parse_long)
+#define OPTIONAL_ULONG_ARG(name, default, flag, label, description) OPTIONAL_ARG(unsigned long, name, default, flag, label, description, "%lu", easyargs_parse_ulong)
+#define OPTIONAL_LONG_LONG_ARG(name, default, flag, label, description) OPTIONAL_ARG(long long, name, default, flag, label, description, "%lld", easyargs_parse_llong)
+#define OPTIONAL_ULONG_LONG_ARG(name, default, flag, label, description) OPTIONAL_ARG(unsigned long long, name, default, flag, label, description, "%llu", easyargs_parse_ullong)
+#define OPTIONAL_SIZE_ARG(name, default, flag, label, description) OPTIONAL_ARG(size_t, name, default, flag, label, description, "%zu", easyargs_parse_size_t)
+#define OPTIONAL_FLOAT_ARG(name, default, flag, label, description, precision) OPTIONAL_ARG(float, name, default, flag, label, description, "%." #precision "g", easyargs_parse_float)
+#define OPTIONAL_DOUBLE_ARG(name, default, flag, label, description, precision) OPTIONAL_ARG(double, name, default, flag, label, description, "%." #precision "g", easyargs_parse_double)
 
 // BOOLEAN_ARG(name, flag, description)
 
 
 // PARSERS
-static inline char parse_char(const char* text) {
+static inline char* easyargs_parse_str(const char* text, int* ok) {
+    *ok = 0; 
+
+    if (!text) {
+        fprintf(stderr, "Error: null string value.\n");
+        return NULL;
+    }
+
+    if (strlen(text) == 0)
+    {
+        fprintf(stderr, "Error: empty string value not allowed.\n");
+        return NULL; 
+    }
+
+    *ok = 1;  
+    return (char*) text; 
+}
+
+static inline char easyargs_parse_char(const char* text, int* ok) {
+    *ok = 0;    
+
+    if (!text) {
+        fprintf(stderr, "Error: null input for character argument.\n");
+        return 0; 
+    }
+    if (text[0] == '\0' || text[1] != '\0') {
+        fprintf(stderr, "Error: '%s' is not a valid character.\n", text); 
+        return 0; 
+    }
+
+    *ok = 1;
     return text[0];
 }
 
-static inline unsigned long parse_ul(const char* text) {
-    return strtoul(text, NULL, 10);
+#define DEFINE_UNSIGNED_INTEGER_PARSER(funcname, rettype, maxval, typename) \
+static inline rettype funcname(const char* text, int* ok) { \
+    *ok = 0; \
+    if (!text) { \
+        fprintf(stderr, "Error: null input for %s.\n", typename); \
+        return 0; \
+    } \
+    char* end; \
+    errno = 0; \
+    unsigned long long val = strtoull(text, &end, 10); \
+    if (*end != '\0') { \
+        fprintf(stderr, "Error: '%s' is not a valid %s.\n", text, typename); \
+        return 0; \
+    } \
+    if (errno == ERANGE || val > (unsigned long long)(maxval)) { \
+        fprintf(stderr, "Error: '%s' is out of range for %s.\n", text, typename); \
+        return 0; \
+    } \
+    *ok = 1; \
+    return (rettype) val; \
 }
 
-static inline unsigned long long parse_ull(const char* text) {
-    return strtoull(text, NULL, 10);
+DEFINE_UNSIGNED_INTEGER_PARSER(easyargs_parse_uint, unsigned int, UINT_MAX, "unsigned int")
+DEFINE_UNSIGNED_INTEGER_PARSER(easyargs_parse_ulong, unsigned long, ULONG_MAX, "unsigned long")
+DEFINE_UNSIGNED_INTEGER_PARSER(easyargs_parse_ullong, unsigned long long, ULLONG_MAX, "unsigned long long")
+DEFINE_UNSIGNED_INTEGER_PARSER(easyargs_parse_size_t, size_t, SIZE_MAX, "size_t")
+
+#undef DEFINE_UNSIGNED_INTEGER_PARSER
+
+#define DEFINE_SIGNED_INTEGER_PARSER(funcname, rettype, minval, maxval, typename) \
+static inline rettype funcname(const char* text, int* ok) { \
+    *ok = 0; \
+    if (!text) { \
+        fprintf(stderr, "Error: null input for %s.\n", typename); \
+        return 0; \
+    } \
+    char* end; \
+    errno = 0; \
+    long long val = strtoll(text, &end, 10); \
+    if (*end != '\0') { \
+        fprintf(stderr, "Error: '%s' is not a valid %s.\n", text, typename); \
+        return 0; \
+    } \
+    if (errno == ERANGE || val < (long long)(minval) || val > (long long)(maxval)) { \
+        fprintf(stderr, "Error: '%s' is out of range for %s.\n", text, typename); \
+        return 0; \
+    } \
+    *ok = 1; \
+    return (rettype) val; \
+}
+
+DEFINE_SIGNED_INTEGER_PARSER(easyargs_parse_int, int, INT_MIN, INT_MAX, "int")
+DEFINE_SIGNED_INTEGER_PARSER(easyargs_parse_long, long, LONG_MIN, LONG_MAX, "long")
+DEFINE_SIGNED_INTEGER_PARSER(easyargs_parse_llong, long long, LLONG_MIN, LLONG_MAX, "long long")
+
+#undef DEFINE_SIGNED_INTEGER_PARSER 
+
+static inline float easyargs_parse_float(const char* text, int* ok) {
+    *ok = 0;
+
+    if (!text) {
+        fprintf(stderr, "Error: null input for float.\n");
+        return 0.0f;
+    }
+    char* end;
+    errno = 0;
+    float value = strtof(text, &end);
+    if (errno == ERANGE) {
+        fprintf(stderr, "Error: '%s' is out of range for type float.\n", text);
+        return 0.0f;
+    }
+    if (*end != '\0') {
+        fprintf(stderr, "Error: '%s' is not a valid float.\n", text);
+        return 0.0f;
+    }
+
+    *ok = 1;
+    return value;
+}
+
+static inline double easyargs_parse_double(const char* text, int* ok) {
+    *ok = 0;
+
+    if (!text) {
+        fprintf(stderr, "Error: null input for double.\n");
+        return 0.0;
+    }
+    char* end;
+    errno = 0;
+    double value = strtod(text, &end);
+    if (errno == ERANGE) {
+        fprintf(stderr, "Error: '%s' is out of range for type double.\n", text);
+        return 0.0;
+    }
+    if (*end != '\0') {
+        fprintf(stderr, "Error: '%s' is not a valid double.\n", text);
+        return 0.0;
+    }
+
+    *ok = 1;
+    return value;
 }
 
 
@@ -148,7 +276,13 @@ static inline int parse_args(int argc, char* argv[], args_t* args) {
 
     // Get required arguments
     #ifdef REQUIRED_ARGS
-    #define REQUIRED_ARG(type, name, label, description, parser) args->name = (type) parser(argv[i++]);
+    #define REQUIRED_ARG(type, name, label, description, parser) \
+    ok = 0; \
+    args->name = (type) parser(argv[i++], &ok); \
+    if (!ok) \
+        return 0; 
+
+    int ok; 
     int i = 1;
     REQUIRED_ARGS
     #undef REQUIRED_ARG
@@ -161,7 +295,10 @@ static inline int parse_args(int argc, char* argv[], args_t* args) {
             fprintf(stderr, "Error: option '%s' requires a value.\n", flag); \
             return 0; \
         } \
-        args->name = (type) parser(argv[++i]); \
+        ok = 0; \
+        args->name = (type) parser(argv[++i], &ok); \
+        if (!ok) \
+            return 0; \
         continue; \
     }
 
