@@ -12,9 +12,9 @@
 #include <stdio.h>
 #include <stdlib.h>  // used for parsing (atoi, atof)
 #include <string.h>  // used for strcmp
-#include <limits.h>  // used for types limits
+#include <limits.h>  // used for type limits
 #include <errno.h>   // used for errno
-#include <stdint.h>  // used for SIZE_MAX 
+#include <stdint.h>  // used for SIZE_MAX
 
 
 // REQUIRED_ARG(type, name, label, description, parser)
@@ -49,33 +49,32 @@
 
 // PARSERS
 static inline char* easyargs_parse_str(const char* text, int* ok) {
-    *ok = 0; 
+    *ok = 0;
 
     if (!text) {
         fprintf(stderr, "Error: null string value.\n");
         return NULL;
     }
 
-    if (strlen(text) == 0)
-    {
+    if (strlen(text) == 0) {
         fprintf(stderr, "Error: empty string value not allowed.\n");
-        return NULL; 
+        return NULL;
     }
 
-    *ok = 1;  
-    return (char*) text; 
+    *ok = 1;
+    return (char*) text;
 }
 
 static inline char easyargs_parse_char(const char* text, int* ok) {
-    *ok = 0;    
+    *ok = 0;
 
     if (!text) {
         fprintf(stderr, "Error: null input for character argument.\n");
-        return 0; 
+        return 0;
     }
     if (text[0] == '\0' || text[1] != '\0') {
-        fprintf(stderr, "Error: '%s' is not a valid character.\n", text); 
-        return 0; 
+        fprintf(stderr, "Error: '%s' is not a valid character.\n", text);
+        return 0;
     }
 
     *ok = 1;
@@ -137,7 +136,7 @@ DEFINE_SIGNED_INTEGER_PARSER(easyargs_parse_int, int, INT_MIN, INT_MAX, "int")
 DEFINE_SIGNED_INTEGER_PARSER(easyargs_parse_long, long, LONG_MIN, LONG_MAX, "long")
 DEFINE_SIGNED_INTEGER_PARSER(easyargs_parse_llong, long long, LLONG_MIN, LLONG_MAX, "long long")
 
-#undef DEFINE_SIGNED_INTEGER_PARSER 
+#undef DEFINE_SIGNED_INTEGER_PARSER
 
 static inline float easyargs_parse_float(const char* text, int* ok) {
     *ok = 0;
@@ -280,9 +279,9 @@ static inline int parse_args(int argc, char* argv[], args_t* args) {
     ok = 0; \
     args->name = (type) parser(argv[i++], &ok); \
     if (!ok) \
-        return 0; 
+        return 0;
 
-    int ok; 
+    int ok;
     int i = 1;
     REQUIRED_ARGS
     #undef REQUIRED_ARG
