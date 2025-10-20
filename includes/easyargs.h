@@ -15,6 +15,7 @@
 #include <limits.h>  // used for type limits
 #include <errno.h>   // used for errno
 #include <stdint.h>  // used for SIZE_MAX
+#include <ctype.h>   // used for isspace
 
 
 // REQUIRED_ARG(type, name, label, description, parser)
@@ -46,6 +47,12 @@
 
 // BOOLEAN_ARG(name, flag, description)
 
+// HELPER FUNCTIONS
+static inline const char* easyargs_skip_leading(const char *s) {
+    if (!s) return s;
+    while (isspace((unsigned char)*s)) ++s;
+    return s;
+}
 
 // PARSERS
 static inline char* easyargs_parse_str(const char* text, int* ok) {
@@ -56,7 +63,7 @@ static inline char* easyargs_parse_str(const char* text, int* ok) {
         return NULL;
     }
 
-    if (strlen(text) == 0) {
+    if (*text == '\0') {
         fprintf(stderr, "Error: empty string value not allowed.\n");
         return NULL;
     }
@@ -88,9 +95,18 @@ static inline rettype funcname(const char* text, int* ok) { \
         fprintf(stderr, "Error: null input for %s.\n", typename); \
         return 0; \
     } \
+    text = easyargs_skip_leading(text); \
+    if (*text == '\0') { \
+        fprintf(stderr, "Error: empty input for %s.\n", typename); \
+        return 0; \
+    } \
+    if (*text == '-') { \
+        fprintf(stderr, "Error: '%s' negative value not allowed for %s.\n", text, typename); \
+        return 0; \
+    } \
     char* end; \
     errno = 0; \
-    unsigned long long val = strtoull(text, &end, 10); \
+    unsigned long long val = strtoull(text, &end, 0); \
     if (*end != '\0') { \
         fprintf(stderr, "Error: '%s' is not a valid %s.\n", text, typename); \
         return 0; \
@@ -117,9 +133,14 @@ static inline rettype funcname(const char* text, int* ok) { \
         fprintf(stderr, "Error: null input for %s.\n", typename); \
         return 0; \
     } \
+    text = easyargs_skip_leading(text); \
+    if (*text == '\0') { \
+        fprintf(stderr, "Error: empty input for %s.\n", typename); \
+        return 0; \
+    } \
     char* end; \
     errno = 0; \
-    long long val = strtoll(text, &end, 10); \
+    long long val = strtoll(text, &end, 0); \
     if (*end != '\0') { \
         fprintf(stderr, "Error: '%s' is not a valid %s.\n", text, typename); \
         return 0; \
@@ -145,6 +166,11 @@ static inline float easyargs_parse_float(const char* text, int* ok) {
         fprintf(stderr, "Error: null input for float.\n");
         return 0.0f;
     }
+    text = easyargs_skip_leading(text);
+    if (*text == '\0') {
+        fprintf(stderr, "Error: empty input for float.\n");
+        return 0;
+    }
     char* end;
     errno = 0;
     float value = strtof(text, &end);
@@ -167,6 +193,11 @@ static inline double easyargs_parse_double(const char* text, int* ok) {
     if (!text) {
         fprintf(stderr, "Error: null input for double.\n");
         return 0.0;
+    }
+    text = easyargs_skip_leading(text);
+    if (*text == '\0') {
+        fprintf(stderr, "Error: empty input for double.\n");
+        return 0;
     }
     char* end;
     errno = 0;
