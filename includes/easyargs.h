@@ -63,7 +63,7 @@ static inline char* easyargs_parse_str(const char* text, int* ok) {
         return NULL;
     }
 
-    if (*text == '\0') {
+    if (text[0] == '\0') {
         fprintf(stderr, "Error: empty string value not allowed.\n");
         return NULL;
     }
@@ -96,11 +96,11 @@ static inline rettype funcname(const char* text, int* ok) { \
         return 0; \
     } \
     text = easyargs_skip_leading(text); \
-    if (*text == '\0') { \
+    if (text[0] == '\0') { \
         fprintf(stderr, "Error: empty input for %s.\n", typename); \
         return 0; \
     } \
-    if (*text == '-') { \
+    if (text[0] == '-') { \
         fprintf(stderr, "Error: '%s' negative value not allowed for %s.\n", text, typename); \
         return 0; \
     } \
@@ -134,7 +134,7 @@ static inline rettype funcname(const char* text, int* ok) { \
         return 0; \
     } \
     text = easyargs_skip_leading(text); \
-    if (*text == '\0') { \
+    if (text[0] == '\0') { \
         fprintf(stderr, "Error: empty input for %s.\n", typename); \
         return 0; \
     } \
@@ -167,7 +167,7 @@ static inline float easyargs_parse_float(const char* text, int* ok) {
         return 0.0f;
     }
     text = easyargs_skip_leading(text);
-    if (*text == '\0') {
+    if (text[0] == '\0') {
         fprintf(stderr, "Error: empty input for float.\n");
         return 0;
     }
@@ -195,7 +195,7 @@ static inline double easyargs_parse_double(const char* text, int* ok) {
         return 0.0;
     }
     text = easyargs_skip_leading(text);
-    if (*text == '\0') {
+    if (text[0] == '\0') {
         fprintf(stderr, "Error: empty input for double.\n");
         return 0;
     }
